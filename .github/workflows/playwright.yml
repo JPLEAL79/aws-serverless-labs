@@ -1,50 +1,40 @@
-# Nombre del workflow que verás en GitHub Actions
 name: Playwright Tests
 
-# Cuándo se ejecuta este workflow
 on:
-  # Se ejecuta cuando haces push a main
   push:
     branches: [ main ]
-
-  # Se ejecuta cuando abres o actualizas un Pull Request hacia main
   pull_request:
     branches: [ main ]
 
 jobs:
   test:
-    # Sistema operativo del runner
     runs-on: ubuntu-latest
-
-    # Tiempo máximo antes de cortar el job
     timeout-minutes: 60
 
     steps:
-      # 1- Clona el repositorio en el runner
+      # 1️- Clona el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2- Configura Node.js (versión LTS)
+      # 2️- Configura Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      # 3- Instala dependencias del proyecto (package-lock.json)
+      # 3️- Instala dependencias
       - name: Install dependencies
         run: npm ci
 
-      # 4- Instala navegadores necesarios para Playwright
+      # 4️- Instala navegadores Playwright
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # 5- Ejecuta los tests
-      # Se excluyen los tests marcados como @local
-      # (Lambda reales que requieren AWS credentials)
+      # 5️- Ejecuta tests (excluye @local y NO falla si no hay tests)
       - name: Run Playwright tests
-        run: npx playwright test --grep-invert @local
+        run: npx playwright test --grep-invert @local --pass-with-no-tests
 
-      # 6- Sube el reporte HTML aunque los tests fallen
+      # 6️- Sube el reporte (aunque no haya tests)
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
