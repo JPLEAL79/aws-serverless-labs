@@ -1,19 +1,13 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 export class LambdaInvoker {
-
   async invokeLambda(functionName: string, payload: unknown) {
-    console.log("DEBUG AWS_REGION =", process.env.AWS_REGION);
-    console.log("DEBUG AWS_DEFAULT_REGION =", process.env.AWS_DEFAULT_REGION);
 
+    // 🔑 Región explícita y determinística
     const region =
-      process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
-
-    if (!region) {
-      throw new Error(
-        "Falta AWS_REGION (o AWS_DEFAULT_REGION) en variables de entorno."
-      );
-    }
+      process.env.AWS_REGION ||
+      process.env.AWS_DEFAULT_REGION ||
+      "us-east-1"; // fallback CI
 
     const client = new LambdaClient({ region });
 
