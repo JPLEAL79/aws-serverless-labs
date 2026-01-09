@@ -1,7 +1,9 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import { config } from "dotenv";
 
-config();
+if (!process.env.GITHUB_ACTIONS) {
+  config();
+}
 
 /**
  * Estructura base que se espera recibir desde la Lambda.
