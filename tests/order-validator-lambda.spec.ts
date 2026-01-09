@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { LambdaInvoker } from "./utils/LambdaInvoker";
+import { LambdaInvoker } from "../shared/LambdaInvoker";
+
 
 /**
  * Tests LOCALES para orderValidatorLambda.

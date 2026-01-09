@@ -1,13 +1,17 @@
 {
-  "name": "lambda-testing",
+  "name": "aws-serverless-testing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
   "keywords": [],
-  "author": "",
+  "author": "Juan Pablo Leal",
   "license": "ISC",
   "type": "commonjs",
+  "scripts": {
+    "invoke:climate": "npx ts-node climate/invoke-clima.manual.ts",
+    "invoke:user": "npx ts-node user/invoke-user.manual.ts",
+    "invoke:order": "npx ts-node order/invoke-order.manual.ts"
+  },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
