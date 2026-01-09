@@ -1,40 +1,34 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
-export type LambdaJsonResponse = {
-  statusCode?: number;
-  body?: string;
-  errorMessage?: string;
-};
-
 export class LambdaInvoker {
-  private readonly lambdaClient: LambdaClient;
+  private client?: LambdaClient;
 
-  constructor() {
-  const region =
-    process.env.AWS_REGION ||
-    process.env.AWS_DEFAULT_REGION ||
-    "us-east-1"; // fallback CI / local
+  private getClient(): LambdaClient {
+    if (this.client) {
+      return this.client;
+    }
 
-  this.lambdaClient = new LambdaClient({ region });
-}
+    const region =
+      process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
 
+    if (!region) {
+      throw new Error(
+        "Falta AWS_REGION (o AWS_DEFAULT_REGION) en variables de entorno."
+      );
+    }
 
-  async invokeLambda(
-    functionName: string,
-    payload: object
-  ): Promise<LambdaJsonResponse> {
+    this.client = new LambdaClient({ region });
+    return this.client;
+  }
+
+  async invokeLambda(functionName: string, payload: unknown) {
+    const client = this.getClient();
+
     const command = new InvokeCommand({
       FunctionName: functionName,
       Payload: Buffer.from(JSON.stringify(payload)),
-      InvocationType: "RequestResponse",
     });
 
-    const response = await this.lambdaClient.send(command);
-
-    const raw = response.Payload
-      ? Buffer.from(response.Payload as Uint8Array).toString()
-      : "{}";
-
-    return JSON.parse(raw) as LambdaJsonResponse;
+    return client.send(command);
   }
 }
