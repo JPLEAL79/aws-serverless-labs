@@ -1,3 +1,4 @@
+// CI-MARKER-12345
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 export class LambdaInvoker {
