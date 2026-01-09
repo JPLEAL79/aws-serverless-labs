@@ -9,12 +9,19 @@ test.describe("Climate Lambda - Automated Tests", () => {
       city: "Temuco",
     });
 
+    // Invocación AWS OK
     expect(response.StatusCode).toBe(200);
 
-    const payload = response.payload;
+    const rawPayload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
 
-    expect(payload.city).toBe("Temuco");
-    expect(typeof payload.temperature).toBe("number");
-    expect(typeof payload.wind).toBe("number");
+    const parsed = JSON.parse(rawPayload);
+    const body = JSON.parse(parsed.body);
+
+    expect(parsed.statusCode).toBe(200);
+    expect(body.city).toBe("Temuco");
+    expect(typeof body.temperature).toBe("number");
+    expect(typeof body.wind).toBe("number");
   });
 });

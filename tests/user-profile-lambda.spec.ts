@@ -9,10 +9,20 @@ test.describe("User Profile Lambda - Automated Tests", () => {
       "userProfileValidatorLambda",
       {
         userId: "USER-123",
+        email: "user@test.com",
+        age: 25,
       }
     );
 
     expect(response.StatusCode).toBe(200);
+
+    const rawPayload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
+
+    const parsed = JSON.parse(rawPayload);
+
+    expect(parsed.statusCode).toBe(200);
   });
 
   test("Should fail when userId is missing", async () => {
@@ -23,5 +33,14 @@ test.describe("User Profile Lambda - Automated Tests", () => {
 
     expect(response.StatusCode).toBe(200);
 
+    const rawPayload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
+
+    const parsed = JSON.parse(rawPayload);
+    const body = JSON.parse(parsed.body);
+
+    expect(parsed.statusCode).toBe(400);
+    expect(body.error).toBeDefined();
   });
 });

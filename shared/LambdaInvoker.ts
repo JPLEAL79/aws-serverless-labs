@@ -1,5 +1,12 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
+/**
+ * LambdaInvoker
+ *
+ * Wrapper simple para invocar AWS Lambda usando AWS SDK v3.
+ * NO interpreta lógica de negocio.
+ * SOLO ejecuta la Lambda y devuelve la respuesta cruda de AWS.
+ */
 export class LambdaInvoker {
   async invokeLambda(functionName: string, payload: unknown) {
     const client = new LambdaClient({
@@ -11,20 +18,6 @@ export class LambdaInvoker {
       Payload: Buffer.from(JSON.stringify(payload)),
     });
 
-    const response = await client.send(command);
-
-    // Decodificar Payload (Uint8Array → string → JSON)
-    const rawPayload = response.Payload
-      ? Buffer.from(response.Payload as Uint8Array).toString()
-      : undefined;
-
-    const parsedPayload = rawPayload ? JSON.parse(rawPayload) : undefined;
-
-    return {
-      StatusCode: response.StatusCode,
-      payload: parsedPayload?.body
-        ? JSON.parse(parsedPayload.body)
-        : parsedPayload,
-    };
+    return client.send(command);
   }
 }
