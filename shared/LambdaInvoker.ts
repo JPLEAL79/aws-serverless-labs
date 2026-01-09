@@ -2,7 +2,6 @@ import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 export class LambdaInvoker {
   async invokeLambda(functionName: string, payload: unknown) {
-    // Región determinística (CI-proof)
     const region =
       process.env.AWS_REGION ||
       process.env.AWS_DEFAULT_REGION ||
