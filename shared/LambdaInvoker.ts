@@ -3,6 +3,9 @@ import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 export class LambdaInvoker {
 
   async invokeLambda(functionName: string, payload: unknown) {
+    console.log("DEBUG AWS_REGION =", process.env.AWS_REGION);
+    console.log("DEBUG AWS_DEFAULT_REGION =", process.env.AWS_DEFAULT_REGION);
+
     const region =
       process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
 
