@@ -1,13 +1,8 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 export class LambdaInvoker {
-  private client?: LambdaClient;
 
-  private getClient(): LambdaClient {
-    if (this.client) {
-      return this.client;
-    }
-
+  async invokeLambda(functionName: string, payload: unknown) {
     const region =
       process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
 
@@ -17,12 +12,7 @@ export class LambdaInvoker {
       );
     }
 
-    this.client = new LambdaClient({ region });
-    return this.client;
-  }
-
-  async invokeLambda(functionName: string, payload: unknown) {
-    const client = this.getClient();
+    const client = new LambdaClient({ region });
 
     const command = new InvokeCommand({
       FunctionName: functionName,
