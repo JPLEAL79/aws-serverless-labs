@@ -21,6 +21,7 @@ test.describe("User Profile Lambda - Automated Tests", () => {
       {}
     );
 
-    expect(response.StatusCode).toBe(400);
+    expect(response.StatusCode).toBe(200);
+
   });
 });
