@@ -9,10 +9,10 @@ test.describe("Climate Lambda - Automated Tests", () => {
       city: "Temuco",
     });
 
-    // ✅ SDK v3: status viene acá
+    // ✅ Status real del SDK v3
     expect(response.$metadata.httpStatusCode).toBe(200);
 
-    // ✅ Payload viene como Uint8Array
+    // ✅ Payload real de Lambda
     const payload = JSON.parse(
       Buffer.from(response.Payload as Uint8Array).toString("utf-8")
     );
