@@ -1,8 +1,5 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
-/**
- * Respuesta base esperada desde una Lambda
- */
 export type LambdaJsonResponse = {
   statusCode?: number;
   body?: string;
@@ -13,10 +10,8 @@ export class LambdaInvoker {
   private readonly lambdaClient: LambdaClient;
 
   constructor() {
-  
-    const region = "us-east-1";
-
-    this.lambdaClient = new LambdaClient({ region });
+    // Región fija para CI y local
+    this.lambdaClient = new LambdaClient({ region: "us-east-1" });
   }
 
   async invokeLambda(
@@ -30,15 +25,6 @@ export class LambdaInvoker {
     });
 
     const response = await this.lambdaClient.send(command);
-
-    if (response.FunctionError) {
-      return {
-        errorMessage: `Lambda FunctionError: ${response.FunctionError}`,
-        body: response.Payload
-          ? Buffer.from(response.Payload as Uint8Array).toString()
-          : "",
-      };
-    }
 
     const raw = response.Payload
       ? Buffer.from(response.Payload as Uint8Array).toString()
