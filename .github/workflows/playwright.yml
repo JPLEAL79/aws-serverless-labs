@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
-    # Variables de entorno para AWS SDK (LambdaInvoker)
+    # Variables de entorno para AWS SDK
+    # NOTA: la región se define explícita para evitar que dotenv la borre en CI
     env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -40,7 +41,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test --grep-invert @local --pass-with-no-tests
 
-      # 6 - Sube el reporte
+      # 6 - Sube el reporte HTML
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -48,3 +49,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
