@@ -10,9 +10,14 @@ export class LambdaInvoker {
   private readonly lambdaClient: LambdaClient;
 
   constructor() {
-    // Región fija para CI y local
-    this.lambdaClient = new LambdaClient({ region: "us-east-1" });
-  }
+  const region =
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    "us-east-1"; // fallback CI / local
+
+  this.lambdaClient = new LambdaClient({ region });
+}
+
 
   async invokeLambda(
     functionName: string,
