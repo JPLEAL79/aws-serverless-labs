@@ -1,7 +1,7 @@
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 /**
- * Estructura base de respuesta esperada desde una Lambda
+ * Respuesta base esperada desde una Lambda
  */
 export type LambdaJsonResponse = {
   statusCode?: number;
@@ -13,15 +13,8 @@ export class LambdaInvoker {
   private readonly lambdaClient: LambdaClient;
 
   constructor() {
-    /**
-     * Regla clara:
-     * - Local: AWS_REGION desde .env
-     * - CI: región fija (no dependemos de dotenv)
-     */
-    const region =
-      process.env.AWS_REGION ||
-      process.env.AWS_DEFAULT_REGION ||
-      "us-east-1";
+  
+    const region = "us-east-1";
 
     this.lambdaClient = new LambdaClient({ region });
   }
