@@ -9,18 +9,16 @@ test.describe("Climate Lambda - Automated Tests", () => {
       city: "Temuco",
     });
 
-    // ✅ AWS SDK v3 usa StatusCode (no statusCode)
-    expect(response.StatusCode).toBe(200);
+    // ✅ SDK v3: status viene acá
+    expect(response.$metadata.httpStatusCode).toBe(200);
 
-    // ✅ El body viene en Payload como Uint8Array
-    const payload = Buffer.from(
-      response.Payload as Uint8Array
-    ).toString();
+    // ✅ Payload viene como Uint8Array
+    const payload = JSON.parse(
+      Buffer.from(response.Payload as Uint8Array).toString("utf-8")
+    );
 
-    const body = JSON.parse(payload);
-
-    expect(body.city).toBe("Temuco");
-    expect(typeof body.temperature).toBe("number");
-    expect(typeof body.wind).toBe("number");
+    expect(payload.city).toBe("Temuco");
+    expect(typeof payload.temperature).toBe("number");
+    expect(typeof payload.wind).toBe("number");
   });
 });
