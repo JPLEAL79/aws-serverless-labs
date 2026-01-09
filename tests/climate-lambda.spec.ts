@@ -9,9 +9,16 @@ test.describe("Climate Lambda - Automated Tests", () => {
       city: "Temuco",
     });
 
-    expect(response.statusCode).toBe(200);
+    // ✅ AWS SDK v3 usa StatusCode (no statusCode)
+    expect(response.StatusCode).toBe(200);
 
-    const body = JSON.parse(response.body as string);
+    // ✅ El body viene en Payload como Uint8Array
+    const payload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
+
+    const body = JSON.parse(payload);
+
     expect(body.city).toBe("Temuco");
     expect(typeof body.temperature).toBe("number");
     expect(typeof body.wind).toBe("number");
