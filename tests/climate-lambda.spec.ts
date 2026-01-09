@@ -9,12 +9,11 @@ test.describe("Climate Lambda - Automated Tests", () => {
       city: "Temuco",
     });
 
-    // ✅ Status real del SDK v3
-    expect(response.$metadata.httpStatusCode).toBe(200);
+    // AWS SDK v3
+    expect(response.StatusCode).toBe(200);
 
-    // ✅ Payload real de Lambda
     const payload = JSON.parse(
-      Buffer.from(response.Payload as Uint8Array).toString("utf-8")
+      Buffer.from(response.Payload as Uint8Array).toString()
     );
 
     expect(payload.city).toBe("Temuco");
