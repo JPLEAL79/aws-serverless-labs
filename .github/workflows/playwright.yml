@@ -11,30 +11,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
+    # Variables de entorno para AWS SDK (LambdaInvoker)
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
     steps:
-      # 1️- Clona el repositorio
+      # 1 - Clona el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️- Configura Node.js
+      # 2 - Configura Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      # 3️- Instala dependencias
+      # 3 - Instala dependencias
       - name: Install dependencies
         run: npm ci
 
-      # 4️- Instala navegadores Playwright
+      # 4 - Instala navegadores Playwright
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # 5️- Ejecuta tests (excluye @local y NO falla si no hay tests)
+      # 5 - Ejecuta tests (excluye @local)
       - name: Run Playwright tests
         run: npx playwright test --grep-invert @local --pass-with-no-tests
 
-      # 6️- Sube el reporte (aunque no haya tests)
+      # 6 - Sube el reporte
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
