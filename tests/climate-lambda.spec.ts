@@ -1,3 +1,5 @@
+process.env.AWS_REGION = "us-east-1";
+
 import { test, expect } from "@playwright/test";
 import { LambdaInvoker } from "../shared/LambdaInvoker";
 
