@@ -1,19 +1,20 @@
 import { test, expect } from "@playwright/test";
 import { LambdaInvoker } from "../shared/LambdaInvoker";
+import { parseLambdaPayload } from "../shared/lambdaPayloadParser";
 
 /**
- * Test automatizado para la Lambda userProfileValidatorLambda
+ * Tests automatizados para la Lambda userProfileValidatorLambda
  *
  * Objetivo:
- * - Validar comportamiento funcional real
  * - Validar reglas de negocio definidas en la Lambda
+ * - Verificar respuestas funcionales reales
  *
  * IMPORTANTE:
- * - El SDK de AWS devuelve StatusCode 200 siempre
- * - El status real viene dentro del payload
+ * - AWS SDK v3 devuelve StatusCode 200 si la invocación fue exitosa
+ * - El status real viene dentro del payload de la Lambda
  */
 test.describe("@aws User Profile Lambda - Automated Tests", () => {
-  // Invocador reutilizable de Lambdas
+  // Invocador reutilizable para AWS Lambda
   const lambdaInvoker = new LambdaInvoker();
 
   /**
@@ -22,6 +23,7 @@ test.describe("@aws User Profile Lambda - Automated Tests", () => {
    * - email válido
    */
   test("Should accept a valid user profile", async () => {
+    // Invocación real a la Lambda en AWS
     const response = await lambdaInvoker.invokeLambda(
       "userProfileValidatorLambda",
       {
@@ -30,29 +32,30 @@ test.describe("@aws User Profile Lambda - Automated Tests", () => {
       }
     );
 
-    // Validación técnica
+    // Validación técnica: la invocación a AWS fue exitosa
     expect(response.StatusCode).toBe(200);
 
-    // Decodificación del payload
-    const rawPayload = Buffer.from(
+    // Parseo centralizado del payload Lambda (helper)
+    const parsedPayload = parseLambdaPayload(
       response.Payload as Uint8Array
-    ).toString();
+    );
 
-    const parsedPayload = JSON.parse(rawPayload);
-
-    // Validación funcional
+    // Validación funcional del status interno de la Lambda
     expect(parsedPayload.statusCode).toBe(200);
 
-    const body = JSON.parse(parsedPayload.body);
+    // El body YA viene parseado como objeto
+    const body = parsedPayload.body;
 
+    // Validación del mensaje esperado
     expect(body.message).toBe("User profile is valid");
   });
 
   /**
    * Caso negativo:
-   * - Falta userId
+   * - Falta userId (regla obligatoria)
    */
   test("Should fail when userId is missing", async () => {
+    // Invocación real a la Lambda en AWS
     const response = await lambdaInvoker.invokeLambda(
       "userProfileValidatorLambda",
       {
@@ -60,18 +63,21 @@ test.describe("@aws User Profile Lambda - Automated Tests", () => {
       }
     );
 
+    // Validación técnica: la invocación a AWS fue exitosa
     expect(response.StatusCode).toBe(200);
 
-    const rawPayload = Buffer.from(
+    // Parseo centralizado del payload Lambda (helper)
+    const parsedPayload = parseLambdaPayload(
       response.Payload as Uint8Array
-    ).toString();
+    );
 
-    const parsedPayload = JSON.parse(rawPayload);
-
+    // Validación funcional del status interno de la Lambda
     expect(parsedPayload.statusCode).toBe(400);
 
-    const body = JSON.parse(parsedPayload.body);
+    // El body YA viene parseado como objeto
+    const body = parsedPayload.body;
 
+    // Validación del error esperado
     expect(body.error).toBe("userId is required");
   });
 });

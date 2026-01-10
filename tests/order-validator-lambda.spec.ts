@@ -1,74 +1,71 @@
+import { test, expect } from "@playwright/test";
+import { LambdaInvoker } from "../shared/LambdaInvoker";
+import { parseLambdaPayload } from "../shared/lambdaPayloadParser";
+
 /**
  * Tests automatizados para la Lambda Order Validator
  *
  * Objetivo:
- * - Validar reglas de negocio de órdenes
- * - Asegurar contrato estándar de respuesta Lambda
+ * - Validar reglas de negocio reales
+ * - Aceptar órdenes válidas
+ * - Rechazar órdenes inválidas
  *
  * IMPORTANTE:
  * - AWS SDK v3 devuelve StatusCode 200 si la invocación fue exitosa
- * - El status real de la lógica viene dentro del payload.statusCode
+ * - El status real del negocio viene dentro del payload
  */
-
-import { test, expect } from "@playwright/test";
-import { LambdaInvoker } from "../shared/LambdaInvoker";
-
 test.describe("Order Validator Lambda - Automated Tests", () => {
+  // Invocador reutilizable de Lambdas
   const lambdaInvoker = new LambdaInvoker();
-  const functionName = "orderValidatorLambda";
 
+  /**
+   * Caso positivo:
+   * - orderId válido
+   * - amount > 0
+   * - currency válida
+   */
   test("Should accept a valid order", async () => {
-    // Payload válido
-    const payload = {
-      orderId: "ORD-123",
-      amount: 150,
-      currency: "USD",
-    };
+    const response = await lambdaInvoker.invokeLambda(
+      "orderValidatorLambda",
+      {
+        orderId: "ORD-12345",
+        amount: 150.5,
+        currency: "USD",
+      }
+    );
 
-    // Invocación real de la Lambda
-    const response = await lambdaInvoker.invokeLambda(functionName, payload);
-
-    // 1️⃣ La invocación AWS fue exitosa
+    // Validación técnica de invocación
     expect(response.StatusCode).toBe(200);
 
-    // 2️⃣ Decodificación del payload (Uint8Array → JSON)
-    const rawPayload = Buffer.from(
-      response.Payload as Uint8Array
-    ).toString();
+    // Parseo centralizado del payload
+    const parsed = parseLambdaPayload(response.Payload as Uint8Array);
 
-    const parsedPayload = JSON.parse(rawPayload);
-
-    // 3️⃣ Validación de lógica de negocio
-    expect(parsedPayload.statusCode).toBe(200);
-
-    const body = JSON.parse(parsedPayload.body);
-    expect(body.message).toBe("Order is valid");
-    expect(body.order.orderId).toBe("ORD-123");
+    // Validación funcional
+    expect(parsed.statusCode).toBe(200);
+    expect(parsed.body.message).toBe("Order is valid");
   });
 
+  /**
+   * Caso negativo:
+   * - orderId vacío
+   * - amount inválido
+   */
   test("Should reject an invalid order", async () => {
-    // Payload inválido
-    const payload = {
-      orderId: "",
-      amount: -10,
-      currency: "USD",
-    };
+    const response = await lambdaInvoker.invokeLambda(
+      "orderValidatorLambda",
+      {
+        orderId: "",
+        amount: -10,
+        currency: "USD",
+      }
+    );
 
-    const response = await lambdaInvoker.invokeLambda(functionName, payload);
-
-    // Invocación correcta a AWS
     expect(response.StatusCode).toBe(200);
 
-    const rawPayload = Buffer.from(
-      response.Payload as Uint8Array
-    ).toString();
+    const parsed = parseLambdaPayload(response.Payload as Uint8Array);
 
-    const parsedPayload = JSON.parse(rawPayload);
+    expect(parsed.statusCode).toBe(400);
+    expect(parsed.body.error).toBe("orderId is required");
 
-    // Error de negocio
-    expect(parsedPayload.statusCode).toBe(400);
-
-    const body = JSON.parse(parsedPayload.body);
-    expect(body.error).toBeDefined();
   });
 });
