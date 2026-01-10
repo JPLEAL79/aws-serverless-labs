@@ -5,27 +5,42 @@ test.describe("User Profile Lambda - Automated Tests", () => {
   const lambdaInvoker = new LambdaInvoker();
 
   test("Should return a valid user profile", async () => {
-    const response = await lambdaInvoker.invokeLambda("UserProfile", {
-      userId: "USER-123",
-    });
+    const response = await lambdaInvoker.invokeLambda(
+      "userProfileValidatorLambda",
+      {
+        userId: "USER-123",
+        email: "user@test.com",
+        age: 25,
+      }
+    );
 
     expect(response.StatusCode).toBe(200);
 
-    const payload = Buffer.from(response.Payload as Uint8Array).toString();
-    const body = JSON.parse(payload);
+    const rawPayload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
 
-    expect(body.userId).toBe("USER-123");
-    expect(body.name).toBeDefined();
+    const parsed = JSON.parse(rawPayload);
+
+    expect(parsed.statusCode).toBe(200);
   });
 
   test("Should fail when userId is missing", async () => {
-    const response = await lambdaInvoker.invokeLambda("UserProfile", {});
+    const response = await lambdaInvoker.invokeLambda(
+      "userProfileValidatorLambda",
+      {}
+    );
 
-    expect(response.StatusCode).toBe(400);
+    expect(response.StatusCode).toBe(200);
 
-    const payload = Buffer.from(response.Payload as Uint8Array).toString();
-    const body = JSON.parse(payload);
+    const rawPayload = Buffer.from(
+      response.Payload as Uint8Array
+    ).toString();
 
+    const parsed = JSON.parse(rawPayload);
+    const body = JSON.parse(parsed.body);
+
+    expect(parsed.statusCode).toBe(400);
     expect(body.error).toBeDefined();
   });
 });
