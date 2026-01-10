@@ -1,67 +1,96 @@
-# AWS Serverless Testing
+# AWS Serverless Labs – QA Automation
 
-Repositorio de **QA Automation** enfocado en la validación de **AWS Lambda** mediante ejecución **manual** y **automatizada**.
+Repositorio de **QA Automation** orientado a la **validación de servicios AWS Serverless**
+mediante **ejecución manual (CLI)** y **automatizada (Playwright)**.
 
-Este proyecto **no es una aplicación**, es un entorno de pruebas para aprender y aplicar buenas prácticas de testing en servicios Serverless.
+Este proyecto **NO es una aplicación productiva**.
+Es un **laboratorio de testing** para practicar buenas prácticas de QA, automatización y CI
+sobre servicios reales de AWS.
 
 ---
 
-## Alcance actual
+## 🎯 Objetivo
 
+- Validar servicios AWS reales desde la perspectiva de QA
+- Entender el uso del **AWS SDK v3**
+- Separar claramente:
+  - ejecución manual (CLI)
+  - automatización
+  - lógica compartida
+
+
+- Ejecución de pruebas **locales** y en **CI (GitHub Actions)**
+
+---
+
+## Servicios cubiertos (por etapas)
+
+### Etapa actual
 - AWS Lambda ✅
-- Pruebas manuales (CLI)
-- Pruebas automatizadas con Playwright
 
-Servicios como **CloudWatch** y **S3** se incorporarán en etapas posteriores.
+### Etapas futuras (no implementadas aún)
+- API Gateway
+- S3
+- Bases de datos (ej: DynamoDB / MongoDB)
+- Observabilidad (CloudWatch)
 
 ---
 
-## Estructura del proyecto
+## 📁 Estructura del proyecto
 
-aws-serverless-testing/
-├── climate/ # Lambda Climate (scripts manuales)
-├── order/ # Lambda Order (scripts manuales)
-├── user/ # Lambda User (scripts manuales)
-├── shared/ # Utilidades compartidas (LambdaInvoker)
-├── tests/ # Tests automatizados (Playwright)
+aws-serverless-labs/
+├── climate/            # Scripts manuales Lambda Climate
+├── order/              # Scripts manuales Lambda Order Validator
+├── user/               # Scripts manuales Lambda User Profile
+├── shared/             # Utilidades compartidas (LambdaInvoker, helpers)
+├── tests/              # Tests automatizados (Playwright)
+│   ├── climate-lambda.spec.ts
+│   ├── order-validator-lambda.spec.ts
+│   └── user-profile-lambda.spec.ts
 ├── playwright.config.ts
 ├── tsconfig.json
-└── package.json
-
-yaml
-Copiar código
+├── package.json
+└── README.md
 
 ---
 
-## Ejecución manual de Lambdas
+## ▶️ Ejecución manual (CLI)
 
-Usado para validar credenciales AWS y conectividad con Lambda.
+Usado para:
+- validar credenciales AWS
+- validar conectividad real con Lambda
+- depuración rápida sin framework de tests
 
 ```bash
 npm run invoke:climate
 npm run invoke:order
 npm run invoke:user
-Los scripts manuales no son tests automatizados.
 
-## Pruebas automatizadas
-Tests funcionales usando Playwright como runner.
+---
 
-bash
-Copiar código
-npx playwright test
+## ▶️ Pruebas automatizadas (Playwright)
+Tests Lambdas reales.
+
+Ejecutar todos los tests:
+- npx playwright test
+
 Ejecutar un test específico:
+- npx playwright test "tests/order-validator-lambda.spec.ts"
 
-bash
-Copiar código
-npx playwright test tests/order-validator-lambda.spec.ts
 Ver reporte HTML:
+- npx playwright show-report
 
-bash
-Copiar código
-npx playwright show-report
 
-⚙️ Variables de entorno
-Archivo .env:
+🔁 CI – GitHub Actions:
+
+El pipeline se ejecuta automáticamente en cada push a `develop` y `main`.
+Ejecuta la misma suite de pruebas automatizadas que en local, usando credenciales AWS configuradas como GitHub Secrets.
+
+---
+
+⚙️ Variables de entorno:
+Uso local (.env)
+
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=xxxx
 AWS_SECRET_ACCESS_KEY=xxxx

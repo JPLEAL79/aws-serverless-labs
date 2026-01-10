@@ -1,31 +1,55 @@
 import { test, expect } from "@playwright/test";
 import { LambdaInvoker } from "../shared/LambdaInvoker";
+import { parseLambdaPayload } from "../shared/lambdaPayloadParser";
 
+/**
+ * Tests automatizados para la Lambda Order Validator
+ *
+ * Objetivo:
+ * - Validar reglas de negocio reales
+ * - Aceptar órdenes válidas
+ * - Rechazar órdenes inválidas
+ *
+ * IMPORTANTE:
+ * - AWS SDK v3 devuelve StatusCode 200 si la invocación fue exitosa
+ * - El status real del negocio viene dentro del payload
+ */
 test.describe("Order Validator Lambda - Automated Tests", () => {
+  // Invocador reutilizable de Lambdas
   const lambdaInvoker = new LambdaInvoker();
 
+  /**
+   * Caso positivo:
+   * - orderId válido
+   * - amount > 0
+   * - currency válida
+   */
   test("Should accept a valid order", async () => {
     const response = await lambdaInvoker.invokeLambda(
       "orderValidatorLambda",
       {
-        orderId: "ORD-123",
-        amount: 150,
+        orderId: "ORD-12345",
+        amount: 150.5,
         currency: "USD",
       }
     );
 
-    // AWS Lambda Invoke OK
+    // Validación técnica de invocación
     expect(response.StatusCode).toBe(200);
 
-    const rawPayload = Buffer.from(
-      response.Payload as Uint8Array
-    ).toString();
+    // Parseo centralizado del payload
+    const parsed = parseLambdaPayload(response.Payload as Uint8Array);
 
-    const parsed = JSON.parse(rawPayload);
-
+    // Validación funcional
     expect(parsed.statusCode).toBe(200);
+    expect(parsed.body.message).toBe("Order is valid");
   });
 
+  /**
+   * Caso negativo:
+   * - orderId vacío
+   * - amount inválido
+   */
   test("Should reject an invalid order", async () => {
     const response = await lambdaInvoker.invokeLambda(
       "orderValidatorLambda",
@@ -36,18 +60,12 @@ test.describe("Order Validator Lambda - Automated Tests", () => {
       }
     );
 
-    // Lambda Invoke SIEMPRE responde 200
     expect(response.StatusCode).toBe(200);
 
-    const rawPayload = Buffer.from(
-      response.Payload as Uint8Array
-    ).toString();
+    const parsed = parseLambdaPayload(response.Payload as Uint8Array);
 
-    const parsed = JSON.parse(rawPayload);
-    const body = JSON.parse(parsed.body);
-
-    // Validación REAL de negocio
     expect(parsed.statusCode).toBe(400);
-    expect(body.error).toBeDefined();
+    expect(parsed.body.error).toBe("orderId is required");
+
   });
 });

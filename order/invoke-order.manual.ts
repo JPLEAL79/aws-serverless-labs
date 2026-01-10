@@ -1,13 +1,6 @@
 /**
- * Script MANUAL para invocar la Lambda "orderValidatorLambda".
- *
- * Uso:
- * - Validar credenciales AWS IAM
- * - Probar conectividad con AWS Lambda
- *
- * IMPORTANTE:
- * - NO es un test automatizado
- * - NO se ejecuta con Playwright
+ * Script MANUAL para invocar la Lambda "orderValidatorLambda"
+ * NO es test automatizado
  */
 
 import { config } from "dotenv";
@@ -16,29 +9,33 @@ import { LambdaInvoker } from "../shared/LambdaInvoker";
 config();
 
 async function main() {
-  // Nombre EXACTO de la Lambda en AWS (según tu spec: orderValidatorLambda)
   const functionName = "orderValidatorLambda";
 
-  // Payload válido (caso positivo)
   const payload = {
     orderId: "ORD-12345",
     amount: 150.5,
     currency: "USD",
   };
 
-  // Invocador reutilizable (maneja región y parseo base de respuesta)
   const invoker = new LambdaInvoker();
-
-  // Ejecuta invocación síncrona
   const response = await invoker.invokeLambda(functionName, payload);
 
-  // Log simple para ver qué devolvió la Lambda
-  console.log("Respuesta recibida desde la Lambda:");
+  console.log("Respuesta cruda:");
   console.log(response);
 
-  // Si la Lambda devolvió error, lo mostramos claro
-  if (response.errorMessage) {
-    console.error("Lambda devolvió error:", response.errorMessage);
+  //  Decodificación correcta
+  const rawPayload = Buffer.from(
+    response.Payload as Uint8Array
+  ).toString();
+
+  const lambdaResult = JSON.parse(rawPayload);
+
+  console.log("Payload decodificado:");
+  console.log(lambdaResult);
+
+  // Validación MANUAL clara
+  if (lambdaResult.statusCode !== 200) {
+    console.error("Lambda respondió con error:", lambdaResult);
     process.exitCode = 1;
   }
 }
